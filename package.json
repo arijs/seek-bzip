@@ -1,7 +1,8 @@
 {
-  "name": "seek-bzip",
-  "version": "1.0.5-git",
+  "name": "@arijs/seek-bzip",
+  "version": "1.0.5",
   "contributors": [
+    "Rafael Hengles (http://github.com/rhengles)",
     "C. Scott Ananian (http://cscott.net)",
     "Eli Skeggs",
     "Kevin Kwok",
@@ -22,7 +23,7 @@
     "test": "test"
   },
   "dependencies": {
-    "commander": "~2.8.1"
+    "commander": "^2.8.1"
   },
   "devDependencies": {
     "fibers": "~1.0.6",

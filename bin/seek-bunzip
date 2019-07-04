@@ -33,66 +33,6 @@ if (program.decompress && program.compress) {
     return 1;
 }
 
-var makeInStream = function(in_fd) {
-    var stat = fs.fstatSync(in_fd);
-    var stream = {
-	buffer: new Buffer(4096),
-	filePos: null,
-	pos: 0,
-	end: 0,
-	_fillBuffer: function() {
-	    this.end = fs.readSync(in_fd, this.buffer, 0, this.buffer.length,
-				  this.filePos);
-	    this.pos = 0;
-	    if (this.filePos !== null && this.end > 0) {
-		this.filePos += this.end;
-	    }
-	},
-	readByte: function() {
-	    if (this.pos >= this.end) { this._fillBuffer(); }
-	    if (this.pos < this.end) {
-		return this.buffer[this.pos++];
-	    }
-	    return -1;
-	},
-	read: function(buffer, bufOffset, length) {
-	    if (this.pos >= this.end) { this._fillBuffer(); }
-	    var bytesRead = 0;
-	    while (bytesRead < length && this.pos < this.end) {
-		buffer[bufOffset++] = this.buffer[this.pos++];
-		bytesRead++;
-	    }
-	    return bytesRead;
-	},
-	seek: function(seek_pos) {
-	    this.filePos = seek_pos;
-	    this.pos = this.end = 0;
-	},
-	eof: function() {
-	  if (this.pos >= this.end) { this._fillBuffer(); }
-	  return !(this.pos < this.end);
-	}
-    };
-    if (stat.size) {
-	stream.size = stat.size;
-    }
-    return stream;
-};
-var makeOutStream = function(out_fd) {
-    return {
-	buffer: new Buffer(4096),
-	pos: 0,
-	flush: function() {
-	    fs.writeSync(out_fd, this.buffer, 0, this.pos);
-	    this.pos = 0;
-	},
-	writeByte: function(byte) {
-	    if (this.pos >= this.buffer.length) { this.flush(); }
-	    this.buffer[this.pos++] = byte;
-	}
-    };
-};
-
 var in_fd = 0, close_in = function(){};
 var out_fd = 1, close_out = function(){};
 if (program.args.length > 0) {
@@ -104,8 +44,8 @@ if (program.args.length > 0) {
     close_out = function() { fs.closeSync(out_fd); };
 }
 
-var inStream = makeInStream(in_fd);
-var outStream= makeOutStream(out_fd);
+var inStream = Bunzip.fdReadStream(in_fd);
+var outStream = Bunzip.fdWriteStream(out_fd);
 
 if (program.decompress) {
     try {
